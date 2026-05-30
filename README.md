@@ -1,5 +1,7 @@
 # Agent Vibes
 
+**[agentvib.es](https://agentvib.es)** — landing page
+
 **Turn your Cursor AI agent's work — and your own typing — into live, generative music.**
 
 While the agent reads files, runs commands, edits code, hits an error, and finally
