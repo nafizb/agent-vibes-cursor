@@ -1,0 +1,45 @@
+name: Release
+
+# Publishes Agent Vibes to the Open VSX Registry (the marketplace Cursor uses)
+# when a version tag is pushed, e.g. `git tag v0.0.1 && git push --tags`.
+#
+# Requires a repository secret named OVSX_TOKEN:
+#   Settings → Secrets and variables → Actions → New repository secret
+# Create the token at https://open-vsx.org/user-settings/tokens and make sure
+# the namespace matching the `publisher` field in package.json exists:
+#   npx ovsx create-namespace <publisher> -p <OVSX_TOKEN>
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm run build
+
+      - name: Package (.vsix)
+        run: npm run package
+
+      - name: Publish to Open VSX
+        env:
+          OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
+        run: npx ovsx publish --no-dependencies -p "$OVSX_TOKEN"
+
+      - name: Attach .vsix to the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.vsix"

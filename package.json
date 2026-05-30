@@ -1,0 +1,105 @@
+{
+  "name": "agent-vibes-cursor",
+  "displayName": "Agent Vibes",
+  "description": "Turns Cursor agent progress and your prompts into live generative music with Strudel.",
+  "version": "0.0.1",
+  "publisher": "agent-vibes-cursor",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "cursor",
+    "music",
+    "generative",
+    "strudel",
+    "ambient",
+    "agent",
+    "vibe coding"
+  ],
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nafizb/agent-vibes-cursor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nafizb/agent-vibes-cursor/issues"
+  },
+  "homepage": "https://github.com/nafizb/agent-vibes-cursor#readme",
+  "qna": false,
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentVibes.start",
+        "title": "Agent Vibes: Start Jam"
+      },
+      {
+        "command": "agentVibes.stop",
+        "title": "Agent Vibes: Stop"
+      },
+      {
+        "command": "agentVibes.installHooks",
+        "title": "Agent Vibes: Install Cursor Hooks"
+      }
+    ],
+    "configuration": {
+      "title": "Agent Vibes",
+      "properties": {
+        "agentVibes.scene": {
+          "type": "string",
+          "enum": [
+            "cinematic",
+            "techno",
+            "lofi",
+            "chiptune"
+          ],
+          "default": "cinematic",
+          "description": "Active musical scene."
+        },
+        "agentVibes.hooksPort": {
+          "type": "number",
+          "default": 7777,
+          "description": "Localhost port the extension listens on for Cursor hook events."
+        },
+        "agentVibes.enableDrumSamples": {
+          "type": "boolean",
+          "default": false,
+          "description": "Load external drum samples (requires network). When off, uses built-in synth percussion."
+        },
+        "agentVibes.experimentalChatDraft": {
+          "type": "boolean",
+          "default": true,
+          "description": "EXPERIMENTAL (macOS): react to the chat composer draft by polling Cursor's SQLite store. May break on Cursor updates; requires the sqlite3 CLI."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "vscode:prepublish": "node esbuild.mjs --production",
+    "typecheck": "tsc --noEmit",
+    "package": "vsce package --no-dependencies",
+    "publish:ovsx": "ovsx publish --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.0",
+    "esbuild": "^0.20.0",
+    "ovsx": "^0.10.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@strudel/web": "^1.3.0"
+  }
+}

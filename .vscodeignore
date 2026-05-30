@@ -1,0 +1,17 @@
+# Sources & build tooling (the extension ships the bundled output in dist/)
+src/**
+webview/**
+node_modules/**
+esbuild.mjs
+tsconfig.json
+**/*.map
+
+# Repo / dev files not needed in the package
+.github/**
+.vscode/**
+.gitignore
+.vscodeignore
+hooks/**
+package-lock.json
+LANDING_PAGE_BRIEF.md
+CONTRIBUTING.md

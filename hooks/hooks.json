@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [{ "command": "~/.cursor/agent-vibes-cursor-hooks/send.sh" }],
+    "beforeSubmitPrompt": [{ "command": "~/.cursor/agent-vibes-cursor-hooks/send.sh" }],
+    "afterAgentThought": [{ "command": "~/.cursor/agent-vibes-cursor-hooks/send.sh" }],
+    "afterAgentResponse": [{ "command": "~/.cursor/agent-vibes-cursor-hooks/send.sh" }],
+    "postToolUseFailure": [{ "command": "~/.cursor/agent-vibes-cursor-hooks/send.sh" }],
+    "subagentStart": [{ "command": "~/.cursor/agent-vibes-cursor-hooks/send.sh" }],
+    "subagentStop": [{ "command": "~/.cursor/agent-vibes-cursor-hooks/send.sh" }],
+    "stop": [{ "command": "~/.cursor/agent-vibes-cursor-hooks/send.sh" }]
+  }
+}
