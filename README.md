@@ -1,6 +1,4 @@
-# Agent Vibes
-
-**[agentvib.es](https://agentvib.es)** 
+# [agentvib.es](https://agentvib.es)
 
 **Turn your Cursor AI agent's work and your own typing into live, generative music.**
 
