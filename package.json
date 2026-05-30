@@ -60,7 +60,9 @@
             "cinematic",
             "techno",
             "lofi",
-            "chiptune"
+            "chiptune",
+            "piano",
+            "jazz"
           ],
           "default": "cinematic",
           "description": "Active musical scene."

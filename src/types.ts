@@ -1,4 +1,10 @@
-export type SceneId = "cinematic" | "techno" | "lofi" | "chiptune";
+export type SceneId =
+  | "cinematic"
+  | "techno"
+  | "lofi"
+  | "chiptune"
+  | "piano"
+  | "jazz";
 
 export type Phase =
   | "idle" // session open, nothing happening

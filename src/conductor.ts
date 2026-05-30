@@ -5,6 +5,8 @@ const MODES_BY_SCENE: Record<SceneId, string[]> = {
   techno: ["minor", "phrygian", "locrian"],
   lofi: ["dorian", "major", "mixolydian", "lydian"],
   chiptune: ["major", "mixolydian", "lydian", "minor"],
+  piano: ["minor", "aeolian", "dorian", "lydian"],
+  jazz: ["dorian", "mixolydian", "aeolian", "lydian"],
 };
 
 const KEYS = ["c", "d", "e", "f", "g", "a"];
@@ -14,6 +16,8 @@ const CPS_RANGE: Record<SceneId, [number, number]> = {
   techno: [0.55, 0.95],
   lofi: [0.42, 0.62],
   chiptune: [0.6, 1.0],
+  piano: [0.38, 0.66],
+  jazz: [0.46, 0.74],
 };
 
 interface Targets {

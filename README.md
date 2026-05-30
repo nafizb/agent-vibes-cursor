@@ -9,9 +9,9 @@ open-source Cursor / VS Code extension built on [Strudel](https://strudel.cc/),
 so every note is synthesized live in the browser — no samples, no streaming, no
 accounts, works offline.
 
-> **Status: early V1.** Cinematic is the most developed scene; techno, lo-fi, and
-> chiptune are functional and being tuned. The "react to your chat draft" feature
-> is experimental and macOS-oriented (see [Privacy & permissions](#privacy--permissions)).
+> **Status: early V1.** Cinematic is the most developed scene; techno, lo-fi,
+> chiptune, piano, and jazz are functional and being tuned. The "react to your
+> chat draft" feature is experimental and macOS-oriented (see [Privacy & permissions](#privacy--permissions)).
 
 ---
 
@@ -64,6 +64,8 @@ your typing ───┘                                                  (state
 | **Techno** | Driving 4-on-the-floor build |
 | **Lo-fi** | Warm, relaxed beats to code to |
 | **Chiptune** | Bright 8-bit arpeggio energy |
+| **Piano** | Einaudi-style neoclassical piano |
+| **Jazz** | Smoky late-night swing |
 
 Switch scenes live from the panel, or set a default with `agentVibes.scene`.
 
