@@ -1,14 +1,16 @@
 # Agent Vibes
 
-**[agentvib.es](https://agentvib.es)** — landing page
+**[agentvib.es](https://agentvib.es)** (landing page)
 
-**Turn your Cursor AI agent's work — and your own typing — into live, generative music.**
+**Turn your Cursor AI agent's work and your own typing into live, generative music.**
+
+![Agent Vibes playing live while the Cursor agent works](media/demo.png)
 
 While the agent reads files, runs commands, edits code, hits an error, and finally
 streams its answer, Agent Vibes builds tension and releases it like a film score.
 Pick a scene, hit play, and let the work compose the soundtrack. It's a free,
 open-source Cursor / VS Code extension built on [Strudel](https://strudel.cc/),
-so every note is synthesized live in the browser — no samples, no streaming, no
+so every note is synthesized live in the browser: no samples, no streaming, no
 accounts, works offline.
 
 > **Status: early V1.** Cinematic is the most developed scene; techno, lo-fi,
@@ -27,7 +29,7 @@ arc of an agent run maps onto a piece of music:
 idle → prompting → thinking → working → (tension on failure) → the drop (response) → resolve
 ```
 
-The music literally breathes with the work — failures create suspense, and the
+The music literally breathes with the work: failures create suspense, and the
 final answer is the drop.
 
 ## How it works
@@ -39,7 +41,7 @@ Cursor agent ──┐
 your typing ───┘                                                  (state machine)   (audio)
 ```
 
-- **Conductor** (`src/conductor.ts`) — a small state machine holding three
+- **Conductor** (`src/conductor.ts`): a small state machine holding three
   continuous parameters, `intensity`, `tension`, and `cps` (tempo), that ease
   toward per-event targets so the music breathes instead of jerking.
 - **Signals**
@@ -47,15 +49,15 @@ your typing ───┘                                                  (state
     prompt, the agent's thoughts, and the live stream of tool calls (`Read`,
     `Shell`, `Write`, …). Each tool category colors the music differently.
   - `src/signals/hooksServer.ts` listens on `127.0.0.1:7777` for Cursor hook
-    events the transcript can't provide — most importantly `postToolUseFailure`
+    events the transcript can't provide, most importantly `postToolUseFailure`
     (the tension cue), plus `afterAgentResponse` (the drop) and `stop` (resolve).
   - `src/signals/typing.ts` turns typing in open editors into gentle pulses.
   - `src/signals/draftWatcher.ts` *(experimental, macOS)* reacts to the prompt
     you're composing in Cursor's chat box.
-- **Scenes** (`src/scenes.ts`) — pure `state → Strudel code` builders. Each scene
+- **Scenes** (`src/scenes.ts`): pure `state → Strudel code` builders. Each scene
   has a fixed identity plus a per-session randomized key/mode so every session
   sounds fresh.
-- **Webview** (`webview/main.ts`) — boots `@strudel/web`, receives state, and
+- **Webview** (`webview/main.ts`): boots `@strudel/web`, receives state, and
   re-evaluates the pattern (throttled) so layers fade in and out smoothly.
 
 ## Scenes
@@ -113,19 +115,19 @@ search **Agent Vibes**, and click Install. See
 ## Privacy & permissions
 
 **TL;DR: Agent Vibes is 100% local.** No accounts, no telemetry, no network
-calls — your code and prompts never leave your machine. It's open source, so you
+calls; your code and prompts never leave your machine. It's open source, so you
 can verify every line. To make the music react to your agent, it reads a few local
 Cursor signals; here's exactly what, and how to turn each off.
 
 - **Cursor hooks (how it hears failures/responses).** To get cues the transcript
   doesn't expose, Agent Vibes adds itself to Cursor's hook system: it writes a
   tiny forwarder script to `~/.cursor/agent-vibes-cursor-hooks/send.sh` and merges
-  entries into `~/.cursor/hooks.json`. That script does one thing — forward
+  entries into `~/.cursor/hooks.json`. That script does one thing: forward
   Cursor's hook payloads to a listener on your own machine (see below). It's
   installed automatically on first run for a zero-setup experience, and you can
   remove the entries from `hooks.json` anytime to opt out.
 - **Local HTTP listener** on `127.0.0.1:7777` (configurable) that receives those
-  hook events. It's bound to localhost — nothing is exposed to your network.
+  hook events. It's bound to localhost; nothing is exposed to your network.
 - **Transcript reading.** Tails the newest agent transcript under
   `~/.cursor/projects/**/agent-transcripts/` to follow prompts, thoughts, and tool
   calls. Read-only; the music is generated from the *shape* of activity, not your
@@ -142,17 +144,17 @@ Everything above stays on `localhost`. Nothing is sent anywhere.
 
 ## Limitations
 
-- Tuned for **Cursor** specifically — it relies on Cursor's transcript and hook
+- Tuned for **Cursor** specifically: it relies on Cursor's transcript and hook
   behavior.
 - All percussion is synthesized (a feature: offline, no asset loading), so don't
   expect large sample libraries.
 - Tool **failures** aren't in the transcript, so failure-driven tension needs the
   hooks installed.
-- Pattern aesthetics are early and meant to be tuned — PRs welcome.
+- Pattern aesthetics are early and meant to be tuned. PRs welcome.
 
 ## Contributing
 
-Contributions are very welcome — especially new scenes and tuning of existing
+Contributions are very welcome, especially new scenes and tuning of existing
 ones. See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, architecture notes, and
 how to add a scene.
 
@@ -173,6 +175,6 @@ workflow that publishes on tagged releases is included at
 
 ## License
 
-[MIT](./LICENSE). Built with [Strudel](https://strudel.cc/) — a JavaScript
+[MIT](./LICENSE). Built with [Strudel](https://strudel.cc/), a JavaScript
 live-coding music engine ported from TidalCycles. Thanks to the Strudel and
 TidalCycles communities.
