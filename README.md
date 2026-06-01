@@ -73,7 +73,17 @@ Switch scenes live from the panel, or set a default with `agentVibes.scene`.
 
 ## Install
 
-### From source (works today)
+### From the marketplace (recommended)
+
+Agent Vibes installs straight from Cursor's extension marketplace (which is backed
+by [Open VSX](https://open-vsx.org/)): open the Extensions panel, search
+**Agent Vibes**, and click Install. It's also available on the VS Code marketplace.
+
+You can also install it directly from the
+[Open VSX listing](https://open-vsx.org/extension/agent-vibes-cursor/agent-vibes-cursor).
+See [Publishing](#publishing-to-open-vsx) for maintainers.
+
+### From source
 
 ```bash
 git clone https://github.com/nafizb/agent-vibes-cursor.git
@@ -83,13 +93,6 @@ npm run build      # or: npm run watch
 ```
 
 Then press **F5** in Cursor / VS Code to launch an Extension Development Host.
-
-### From the marketplace (Open VSX)
-
-Once published, Agent Vibes installs straight from Cursor's extension marketplace
-(which is backed by [Open VSX](https://open-vsx.org/)): open the Extensions panel,
-search **Agent Vibes**, and click Install. See
-[Publishing](#publishing-to-open-vsx) for maintainers.
 
 ## Quick start
 
