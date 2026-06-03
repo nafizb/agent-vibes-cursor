@@ -2,7 +2,7 @@
   "name": "agent-vibes-cursor",
   "displayName": "Agent Vibes",
   "description": "Turns Cursor agent progress and your prompts into live generative music with Strudel.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "agent-vibes-cursor",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -22,7 +22,6 @@
     "agent",
     "vibe coding"
   ],
-  "icon": "media/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/nafizb/agent-vibes-cursor.git"
@@ -43,12 +42,81 @@
         "title": "Agent Vibes: Start Jam"
       },
       {
+        "command": "agentVibes.toggle",
+        "title": "Agent Vibes: Open Player"
+      },
+      {
         "command": "agentVibes.stop",
-        "title": "Agent Vibes: Stop"
+        "title": "Agent Vibes: Stop",
+        "icon": "$(stop-circle)"
       },
       {
         "command": "agentVibes.installHooks",
         "title": "Agent Vibes: Install Cursor Hooks"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "agentVibes.toggle",
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v"
+      }
+    ],
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "agentVibesPanel",
+          "title": "Agent Vibes",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "agentVibesPanel": [
+        {
+          "id": "agentVibes.view",
+          "name": "Agent Vibes",
+          "type": "webview"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "agentVibes.stop",
+          "when": "view == agentVibes.view",
+          "group": "navigation"
+        }
+      ]
+    },
+    "walkthroughs": [
+      {
+        "id": "gettingStarted",
+        "title": "Get started with Agent Vibes",
+        "description": "Turn your agent's work into a live soundtrack — two clicks and you're set.",
+        "steps": [
+          {
+            "id": "play",
+            "title": "Turn on the music",
+            "description": "Open the player and click **▶ Enable audio** once. Reopen it anytime from the **Agent Vibes** item in the status bar or with `ctrl+alt+v` / `cmd+alt+v`.\n[Open the player](command:agentVibes.start)",
+            "media": {
+              "image": "media/demo.png",
+              "altText": "The Agent Vibes player with the Enable audio button"
+            },
+            "completionEvents": [
+              "onCommand:agentVibes.start"
+            ]
+          },
+          {
+            "id": "vibe",
+            "title": "Keep coding with your agent",
+            "description": "That's it — just work as usual. Agent Vibes listens to your agent and scores it live: calm while idle, building as it works, and a drop when the answer lands.",
+            "media": {
+              "image": "media/demo.png",
+              "altText": "Music reacting live to an agent session"
+            }
+          }
+        ]
       }
     ],
     "configuration": {

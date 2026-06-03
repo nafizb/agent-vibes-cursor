@@ -96,13 +96,21 @@ Then press **F5** in Cursor / VS Code to launch an Extension Development Host.
 
 ## Quick start
 
-1. Run **Agent Vibes: Start Jam** from the command palette (the panel also opens
-   automatically on startup).
+On first install, a **Get started with Agent Vibes** walkthrough opens to walk
+you through these steps.
+
+1. Open the player. It's a dockable panel you can reopen anytime from:
+   - the **Agent Vibes** item in the status bar (bottom right),
+   - the keyboard shortcut `Ctrl+Alt+V` (`Cmd+Alt+V` on macOS), or
+   - **Agent Vibes: Start Jam** / **Open Player** in the command palette.
 2. Click **▶ Enable audio** (required once by the browser autoplay policy).
 3. (Optional) Run **Agent Vibes: Install Cursor Hooks** to wire failure/stop cues,
    then start a **new** agent chat so the hooks take effect.
 4. Give the agent a task and listen: ambient drone → bass + kick as it works →
    tension on failures → a lead at the drop when the response streams → resolution.
+
+The player docks alongside the Terminal/Problems panel. Closing it just hides
+it — your jam keeps running and reopening is instant.
 
 ## Configuration
 

@@ -7,14 +7,21 @@ import { HooksServer } from "./signals/hooksServer";
 import { TranscriptTail } from "./signals/transcript";
 import { TypingSignal } from "./signals/typing";
 import { DraftWatcher } from "./signals/draftWatcher";
-import { SceneId } from "./types";
+import { MusicalState, Phase, SceneId } from "./types";
 
-let panel: vscode.WebviewPanel | undefined;
+const VIEW_ID = "agentVibes.view";
+const ONBOARDED_KEY = "agentVibes.onboarded";
+const WALKTHROUGH_ID = "agent-vibes-cursor.agent-vibes-cursor#gettingStarted";
+
+let context: vscode.ExtensionContext | undefined;
+let view: vscode.WebviewView | undefined;
+let statusBar: vscode.StatusBarItem | undefined;
 let conductor: Conductor | undefined;
 let hooks: HooksServer | undefined;
 let transcript: TranscriptTail | undefined;
 let typing: TypingSignal | undefined;
 let draft: DraftWatcher | undefined;
+let engineStarted = false;
 
 const HOOK_EVENTS = [
   "sessionStart",
@@ -34,15 +41,64 @@ const HOOK_EVENTS = [
   "beforeMCPExecution",
 ];
 
-export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand("agentVibes.start", () => start(context)),
+/**
+ * Hosts the player as a Webview *view* in a dockable panel container. Unlike a
+ * standalone WebviewPanel (which VS Code destroys when the user closes the tab,
+ * with no built-in way back), a view can always be reopened from the Panel, the
+ * View menu, the status bar item, or the `agentVibes.view.focus` command.
+ */
+class AgentVibesViewProvider implements vscode.WebviewViewProvider {
+  constructor(private readonly extensionUri: vscode.Uri) {}
+
+  resolveWebviewView(webviewView: vscode.WebviewView): void {
+    view = webviewView;
+    const scene = config().get<SceneId>("scene", "cinematic");
+
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, "dist")],
+    };
+    webviewView.webview.html = getHtml(webviewView.webview, this.extensionUri, scene);
+    webviewView.webview.onDidReceiveMessage((msg) => onWebviewMessage(msg));
+
+    // The view's lifetime is independent of the engine: when it goes away we
+    // just drop our reference, leaving the conductor/signals running so the
+    // next open is instant. Engine teardown only happens on explicit stop.
+    webviewView.onDidDispose(() => {
+      if (view === webviewView) view = undefined;
+    });
+
+    startEngine();
+    // Paint immediately from the current state instead of waiting for a tick.
+    if (conductor) {
+      webviewView.webview.postMessage({ type: "state", state: conductor.getState() });
+    }
+    startDiagnostics();
+  }
+}
+
+export function activate(ctx: vscode.ExtensionContext) {
+  context = ctx;
+
+  ctx.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      VIEW_ID,
+      new AgentVibesViewProvider(ctx.extensionUri),
+      { webviewOptions: { retainContextWhenHidden: true } },
+    ),
+    vscode.commands.registerCommand("agentVibes.start", () => reveal()),
+    vscode.commands.registerCommand("agentVibes.toggle", () => reveal()),
     vscode.commands.registerCommand("agentVibes.stop", () => stop()),
     vscode.commands.registerCommand("agentVibes.installHooks", () => installHooks()),
   );
-  // Auto-open the panel so the user sees it without hunting for the command.
-  // (Audio itself still needs one click due to the browser autoplay policy.)
-  start(context).catch((err) => console.error("[agent-vibes-cursor] start failed", err));
+
+  // A persistent, low-noise handle in the status bar so the player is always one
+  // click away even after the panel is closed.
+  statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  statusBar.command = "agentVibes.toggle";
+  ctx.subscriptions.push(statusBar);
+  updateStatusBar();
+  statusBar.show();
 
   // Auto-wire Cursor hooks on first run so failure/stop cues work without a
   // manual step. Idempotent; only notifies when it actually changes hooks.json.
@@ -56,45 +112,53 @@ export function activate(context: vscode.ExtensionContext) {
   } catch (err) {
     console.warn("[agent-vibes-cursor] auto hook install failed", err);
   }
+
+  // First-install onboarding: open the Getting Started walkthrough once. It
+  // teaches the entry points (status bar, keybinding) and links to the player,
+  // audio-enable, and hook-install actions. Never shown again after the first run.
+  if (!ctx.globalState.get<boolean>(ONBOARDED_KEY)) {
+    void ctx.globalState.update(ONBOARDED_KEY, true);
+    void vscode.commands
+      .executeCommand("workbench.action.openWalkthrough", WALKTHROUGH_ID, false)
+      .then(undefined, (err) => console.warn("[agent-vibes-cursor] open walkthrough failed", err));
+  }
 }
 
 export function deactivate() {
   stop();
+  statusBar?.dispose();
+  statusBar = undefined;
 }
 
 function config() {
   return vscode.workspace.getConfiguration("agentVibes");
 }
 
-async function start(context: vscode.ExtensionContext) {
+/** Reveal the player view (creating it if needed) and ensure the engine runs. */
+async function reveal(): Promise<void> {
+  // Auto-generated focus command reveals the view even before it's resolved.
+  await vscode.commands.executeCommand(`${VIEW_ID}.focus`);
+  startEngine();
+}
+
+/**
+ * Start the musical engine and signal sources. Idempotent and decoupled from
+ * the view's lifecycle, so closing/reopening the player never tears it down.
+ */
+function startEngine(): void {
+  if (engineStarted) return;
+  engineStarted = true;
+
   const scene = config().get<SceneId>("scene", "cinematic");
   const port = config().get<number>("hooksPort", 7777);
-
-  if (!panel) {
-    panel = vscode.window.createWebviewPanel(
-      "agentVibes",
-      "Agent Vibes",
-      { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
-      {
-        enableScripts: true,
-        retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, "dist")],
-      },
-    );
-    panel.webview.html = getHtml(panel.webview, context.extensionUri, scene);
-    panel.onDidDispose(() => {
-      panel = undefined;
-      stop();
-    });
-    panel.webview.onDidReceiveMessage((msg) => onWebviewMessage(msg));
-  } else {
-    panel.reveal(vscode.ViewColumn.Beside, true);
-  }
 
   if (!conductor) {
     conductor = new Conductor({
       scene,
-      onState: (state) => panel?.webview.postMessage({ type: "state", state }),
+      onState: (state) => {
+        view?.webview.postMessage({ type: "state", state });
+        updateStatusBar(state);
+      },
     });
     conductor.start();
   }
@@ -102,15 +166,14 @@ async function start(context: vscode.ExtensionContext) {
   // Signal sources. Every event both drives the conductor and is mirrored to
   // the panel's live signal monitor.
   if (!hooks) {
-    hooks = new HooksServer(port, dispatch);
-    try {
-      await hooks.start();
-    } catch (err) {
+    const server = new HooksServer(port, dispatch);
+    hooks = server;
+    server.start().catch((err) => {
       vscode.window.showWarningMessage(
         `Agent Vibes: hooks port ${port} unavailable (${String(err)}). Transcript signal still active.`,
       );
-      hooks = undefined;
-    }
+      if (hooks === server) hooks = undefined;
+    });
   }
 
   const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -127,7 +190,7 @@ async function start(context: vscode.ExtensionContext) {
   // Experimental: read the chat composer draft from Cursor's SQLite stores.
   // Note: not gated on `root` -- the chat you type in is often an unbound
   // composer, and the watcher discovers the active draft globally.
-  if (!draft && config().get<boolean>("experimentalChatDraft", true)) {
+  if (!draft && config().get<boolean>("experimentalChatDraft", true) && context) {
     const globalStorageDir = cursorGlobalStorageDir(context);
     draft = new DraftWatcher(root ?? "", globalStorageDir, dispatch);
     draft.start();
@@ -137,6 +200,29 @@ async function start(context: vscode.ExtensionContext) {
   }
 
   startDiagnostics();
+  updateStatusBar();
+}
+
+const PHASE_LABEL: Record<Phase, string> = {
+  idle: "idle",
+  prompting: "prompting",
+  thinking: "thinking",
+  working: "working",
+  drop: "the drop",
+  resolve: "resolving",
+};
+
+/** Reflect engine state in the always-visible status bar handle. */
+function updateStatusBar(state?: MusicalState): void {
+  if (!statusBar) return;
+  if (!engineStarted) {
+    statusBar.text = "$(pulse) Agent Vibes";
+    statusBar.tooltip = "Open the Agent Vibes player";
+    return;
+  }
+  const phase = state?.phase ?? conductor?.getState().phase ?? "idle";
+  statusBar.text = `$(pulse) Agent Vibes · ${PHASE_LABEL[phase]}`;
+  statusBar.tooltip = "Open the Agent Vibes player";
 }
 
 /**
@@ -163,11 +249,11 @@ function cursorGlobalStorageDir(context: vscode.ExtensionContext): string {
 
 let diagTimer: NodeJS.Timeout | undefined;
 
-/** Push a compact status of every signal source to the panel's footer. */
+/** Push a compact status of every signal source to the view's footer. */
 function startDiagnostics() {
   if (diagTimer) return;
   const tick = () => {
-    panel?.webview.postMessage({
+    view?.webview.postMessage({
       type: "diag",
       data: {
         transcript: transcript?.status() ?? "off",
@@ -186,11 +272,11 @@ function dispatch(ev: import("./types").AgentEvent) {
     draft?.pinComposer(ev.composerId);
   }
   conductor?.push(ev);
-  panel?.webview.postMessage({ type: "event", event: ev });
+  view?.webview.postMessage({ type: "event", event: ev });
 }
 
 function stop() {
-  panel?.webview.postMessage({ type: "stop" });
+  view?.webview.postMessage({ type: "stop" });
   if (diagTimer) clearInterval(diagTimer);
   diagTimer = undefined;
   conductor?.dispose();
@@ -203,6 +289,8 @@ function stop() {
   typing = undefined;
   draft?.dispose();
   draft = undefined;
+  engineStarted = false;
+  updateStatusBar();
 }
 
 function onWebviewMessage(msg: any) {
